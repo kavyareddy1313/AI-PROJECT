@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Market Insights</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4361ee;
+            --primary-dark: #3a56d4;
+            --secondary: #3f37c9;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --gray: #6c757d;
+            --light-gray: #e9ecef;
+            --success: #4cc9f0;
+            --warning: #f8961e;
+            --danger: #f94144;
+            --info: #4895ef;
+            --white: #ffffff;
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --shadow-md: 0 10px 15px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 20px 25px rgba(0, 0, 0, 0.1);
+            --rounded-sm: 0.25rem;
+            --rounded: 0.5rem;
+            --rounded-md: 0.75rem;
+            --rounded-lg: 1rem;
+            --rounded-full: 9999px;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            line-height: 1.6;
+            color: var(--dark);
+            background-color: #f5f7ff;
+            min-height: 100vh;
+            padding: 1rem;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            height: calc(100vh - 2rem);
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        h1 {
+            text-align: center;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+            font-size: 2rem;
+            letter-spacing: -0.025em;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: var(--gray);
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+        }
+        
+        .chat-container {
+            background-color: var(--white);
+            border-radius: var(--rounded-lg);
+            box-shadow: var(--shadow-md);
+            padding: 1.5rem;
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            border: 1px solid var(--light-gray);
+        }
+        
+        .input-container {
+            display: flex;
+            gap: 0.75rem;
+            padding: 0.5rem;
+            background-color: var(--white);
+            border-radius: var(--rounded-lg);
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--light-gray);
+        }
+        
+        #query {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            border: none;
+            border-radius: var(--rounded);
+            font-size: 1rem;
+            background-color: var(--white);
+            color: var(--dark);
+            outline: none;
+            transition: all 0.2s;
+        }
+        
+        #query:focus {
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+        }
+        
+        button {
+            background-color: var(--primary);
+            color: var(--white);
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--rounded);
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        button:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-1px);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        .message {
+            max-width: 85%;
+            padding: 0.75rem 1rem;
+            border-radius: var(--rounded-lg);
+            font-size: 0.95rem;
+            line-height: 1.5;
+            position: relative;
+            animation: fadeIn 0.3s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .user-message {
+            background-color: var(--primary);
+            color: var(--white);
+            align-self: flex-end;
+            border-bottom-right-radius: var(--rounded-sm);
+        }
+        
+        .bot-message {
+            background-color: var(--light-gray);
+            color: var(--dark);
+            align-self: flex-start;
+            border-bottom-left-radius: var(--rounded-sm);
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(67, 97, 238, 0.2);
+            border-radius: 50%;
+            border-top-color: var(--primary);
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .error {
+            background-color: #fee2e2;
+            color: var(--danger);
+        }
+        
+        .stock-data {
+            background-color: #f0fdf4;
+            padding: 0.75rem 1rem;
+            border-radius: var(--rounded);
+            margin-top: 0.5rem;
+            border-left: 4px solid var(--success);
+        }
+        
+        .stock-data p {
+            margin: 0.25rem 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .stock-data strong {
+            font-weight: 600;
+        }
+        
+        .stock-data-icon {
+            width: 20px;
+            height: 20px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--success);
+            color: white;
+            border-radius: 50%;
+            font-size: 0.75rem;
+        }
+        
+        .timestamp {
+            font-size: 0.75rem;
+            color: var(--gray);
+            margin-top: 0.5rem;
+            text-align: right;
+        }
+        
+        .welcome-message {
+            background-color: #e6f2ff;
+            border-left: 4px solid var(--primary);
+            padding: 1rem;
+            border-radius: var(--rounded);
+            margin-bottom: 1rem;
+        }
+        
+        .welcome-message h3 {
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+        }
+        
+        .welcome-message p {
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+        
+        .welcome-message ul {
+            padding-left: 1.25rem;
+            margin: 0.5rem 0;
+        }
+        
+        .welcome-message li {
+            margin-bottom: 0.25rem;
+            font-size: 0.9rem;
+        }
+        
+        .suggestion-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+        
+        .suggestion-chip {
+            background-color: var(--light-gray);
+            color: var(--dark);
+            padding: 0.5rem 0.75rem;
+            border-radius: var(--rounded-full);
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+        }
+        
+        .suggestion-chip:hover {
+            background-color: var(--primary);
+            color: var(--white);
+            transform: translateY(-1px);
+        }
+        
+        @media (max-width: 640px) {
+            .container {
+                padding: 0;
+            }
+            
+            .chat-container {
+                border-radius: 0;
+                border-left: none;
+                border-right: none;
+            }
+            
+            .message {
+                max-width: 90%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Stock Market Insights</h1>
+            <p class="subtitle">Get real-time stock data and market analysis</p>
+        </header>
+        
+        <div class="chat-container" id="chat-container">
+            <div class="welcome-message">
+                <h3>👋 Welcome to Stock Market Insights</h3>
+                <p>I can help you with:</p>
+                <ul>
+                    <li>Real-time stock prices and data</li>
+                    <li>Market trends and analysis</li>
+                    <li>Company financial information</li>
+                </ul>
+                <p>Try asking:</p>
+                <div class="suggestion-chips">
+                    <button class="suggestion-chip">Stock price of AAPL</button>
+                    <button class="suggestion-chip">Market trends today</button>
+                    <button class="suggestion-chip">TSLA performance</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="input-container">
+            <input type="text" id="query" placeholder="Ask about stocks or market trends..." autocomplete="off">
+            <button id="submit-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="22" y1="2" x2="11" y2="13"></line>
+                    <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                </svg>
+                Send
+            </button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const chatContainer = document.getElementById('chat-container');
+            const queryInput = document.getElementById('query');
+            const submitBtn = document.getElementById('submit-btn');
+            const suggestionChips = document.querySelectorAll('.suggestion-chip');
+            
+            // Handle form submission
+            submitBtn.addEventListener('click', handleSubmit);
+            queryInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    handleSubmit();
+                }
+            });
+            
+            // Handle suggestion chips
+            suggestionChips.forEach(chip => {
+                chip.addEventListener('click', function() {
+                    queryInput.value = this.textContent;
+                    queryInput.focus();
+                });
+            });
+            
+            function handleSubmit() {
+                const userInput = queryInput.value.trim();
+                if (!userInput) return;
+                
+                // Add user message to chat
+                addMessage(userInput, 'user');
+                queryInput.value = '';
+                
+                // Show loading indicator
+                const loadingId = showLoading();
+                
+                // Process the input
+                processInput(userInput)
+                    .then(response => {
+                        // Remove loading indicator
+                        removeLoading(loadingId);
+                        // Add bot response
+                        addMessage(response, 'bot');
+                    })
+                    .catch(error => {
+                        removeLoading(loadingId);
+                        addMessage(`Error: ${error.message}`, 'bot error');
+                    });
+            }
+            
+            function addMessage(text, type) {
+                const messageDiv = document.createElement('div');
+                messageDiv.classList.add('message');
+                
+                if (type.includes('user')) {
+                    messageDiv.classList.add('user-message');
+                    messageDiv.textContent = text;
+                    
+                    // Add timestamp
+                    const timestamp = document.createElement('div');
+                    timestamp.classList.add('timestamp');
+                    timestamp.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                    messageDiv.appendChild(timestamp);
+                } else {
+                    messageDiv.classList.add('bot-message');
+                    if (type.includes('error')) {
+                        messageDiv.classList.add('error');
+                    }
+                    
+                    // Check if the response contains stock data formatting
+                    if (text.includes('📊 Latest Stock Data')) {
+                        // Format stock data with HTML
+                        const parts = text.split('\n');
+                        const stockDataDiv = document.createElement('div');
+                        stockDataDiv.classList.add('stock-data');
+                        
+                        parts.forEach(part => {
+                            if (part.trim() === '') return;
+                            
+                            const p = document.createElement('p');
+                            
+                            if (part.includes('📊')) {
+                                p.innerHTML = `<strong>${part}</strong>`;
+                                stockDataDiv.appendChild(p);
+                            } else if (part.includes('🕒') || part.includes('📈') || 
+                                      part.includes('📊') || part.includes('📉') || 
+                                      part.includes('🔚') || part.includes('🔄')) {
+                                const icon = document.createElement('span');
+                                icon.classList.add('stock-data-icon');
+                                icon.textContent = part.charAt(0);
+                                
+                                p.appendChild(icon);
+                                p.appendChild(document.createTextNode(part.substring(1)));
+                                stockDataDiv.appendChild(p);
+                            } else {
+                                p.textContent = part;
+                                stockDataDiv.appendChild(p);
+                            }
+                        });
+                        
+                        messageDiv.appendChild(stockDataDiv);
+                    } else {
+                        messageDiv.textContent = text;
+                    }
+                    
+                    // Add timestamp
+                    const timestamp = document.createElement('div');
+                    timestamp.classList.add('timestamp');
+                    timestamp.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                    messageDiv.appendChild(timestamp);
+                }
+                
+                chatContainer.appendChild(messageDiv);
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+            }
+            
+            function showLoading() {
+                const loadingDiv = document.createElement('div');
+                loadingDiv.classList.add('message', 'bot-message');
+                loadingDiv.id = 'loading-' + Date.now();
+                
+                const loadingSpan = document.createElement('span');
+                loadingSpan.classList.add('loading');
+                
+                loadingDiv.appendChild(loadingSpan);
+                chatContainer.appendChild(loadingDiv);
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+                
+                return loadingDiv.id;
+            }
+            
+            function removeLoading(id) {
+                const loadingDiv = document.getElementById(id);
+                if (loadingDiv) {
+                    loadingDiv.remove();
+                }
+            }
+            
+            async function processInput(userInput) {
+                userInput = userInput.toLowerCase().trim();
+                
+                if (userInput.includes('hi') || userInput.includes('hello')) {
+                    return "👋 Hello! I'm your stock market assistant. Ask me about stock prices, market trends, or company financials.";
+                }
+                
+                if (userInput.includes('thank')) {
+                    return "You're welcome! Let me know if you need any more stock market information.";
+                }
+                
+                if (userInput.includes('stock price of') || userInput.includes('price of')) {
+                    let symbol = '';
+                    if (userInput.includes('stock price of')) {
+                        symbol = userInput.split('stock price of')[1].trim().toUpperCase();
+                    } else {
+                        symbol = userInput.split('price of')[1].trim().toUpperCase();
+                    }
+                    
+                    try {
+                        const stockData = await getStockData(symbol);
+                        if (stockData) {
+                            return formatStockData(stockData);
+                        } else {
+                            return `Could not retrieve stock data for '${symbol}'. Please check the symbol and try again.`;
+                        }
+                    } catch (error) {
+                        throw new Error(`Failed to fetch stock data: ${error.message}`);
+                    }
+                }
+                
+                // For other queries, use Gemini API
+                try {
+                    return await getGeminiResponse(userInput);
+                } catch (error) {
+                    throw new Error(`Failed to get AI response: ${error.message}`);
+                }
+            }
+            
+            async function getStockData(symbol) {
+                const apiKey = 'L51WSWBOXOS8M6HF'; // Alpha Vantage API key
+                const functionType = 'TIME_SERIES_INTRADAY';
+                const interval = '5min';
+                
+                const url = `https://www.alphavantage.co/query?function=${functionType}&symbol=${symbol}&interval=${interval}&apikey=${apiKey}`;
+                
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error(`API request failed with status ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                if (data['Time Series (5min)']) {
+                    const timeSeries = data['Time Series (5min)'];
+                    const latestTimestamp = Object.keys(timeSeries).sort().pop();
+                    const stockInfo = timeSeries[latestTimestamp];
+                    
+                    return {
+                        symbol: symbol,
+                        timestamp: latestTimestamp,
+                        open: parseFloat(stockInfo['1. open']).toFixed(2),
+                        high: parseFloat(stockInfo['2. high']).toFixed(2),
+                        low: parseFloat(stockInfo['3. low']).toFixed(2),
+                        close: parseFloat(stockInfo['4. close']).toFixed(2),
+                        volume: parseInt(stockInfo['5. volume']).toLocaleString()
+                    };
+                } else if (data['Error Message']) {
+                    throw new Error(data['Error Message']);
+                } else {
+                    throw new Error('Unexpected API response format');
+                }
+            }
+            
+            function formatStockData(stockData) {
+                return `📊 Latest Stock Data for ${stockData.symbol}\n` +
+                       `🕒 Time: ${stockData.timestamp}\n` +
+                       `📈 Open: $${stockData.open}\n` +
+                       `📊 High: $${stockData.high}\n` +
+                       `📉 Low: $${stockData.low}\n` +
+                       `🔚 Close: $${stockData.close}\n` +
+                       `🔄 Volume: ${stockData.volume}`;
+            }
+            
+            async function getGeminiResponse(prompt) {
+                // Note: In a real application, you should not expose your API key in client-side code.
+                // This should be done through a backend service for security.
+                // This is for demonstration purposes only.
+                const apiKey = 'AIzaSyBOLaBdjFHCRW-M9UJYBc-ATggLR1NoAyE';
+                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+                
+                const requestBody = {
+                    contents: [{
+                        parts: [{
+                            text: `You are a stock market expert. Provide a concise and professional response to: ${prompt}`
+                        }]
+                    }]
+                };
+                
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Gemini API request failed with status ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                if (data.candidates && data.candidates[0].content.parts[0].text) {
+                    return data.candidates[0].content.parts[0].text;
+                } else {
+                    throw new Error('Unexpected response format from Gemini API');
+                }
+            }
+        });
+    </script>
+</body>
+</html>
